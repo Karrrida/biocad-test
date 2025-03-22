@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prettify": "prettier --log-level warn --cache '{src/**/*,*}.{ts,tsx,js,json,yml,scss}' '!**/{node_modules,dist}/**/*'"
   },
   "keywords": [],
   "author": "",
@@ -14,12 +15,15 @@
   "devDependencies": {
     "@types/express": "^5.0.1",
     "@types/node": "^22.13.11",
+    "prettier": "^3.5.3",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "@prisma/client": "^6.5.0",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "prisma": "^6.5.0"
   }
 }
