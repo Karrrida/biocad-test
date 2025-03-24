@@ -1,28 +1,32 @@
-import express from "express";
-import router from "./routers/routers"
-import {PORT} from "./config";
-import {connectDB} from "./db";
+import express from 'express';
+import router from './routers/routers';
+import { PORT } from './config';
+import { connectDB } from './db';
+import setupMiddlewares from './middlewares';
+import errorHandler from './middlewares/error.middleware';
+import logger from './utils/logger';
+
 
 const app = express();
-
 const startServer = () => {
-    app.use(express.json());
-    app.use('/', router);
+  setupMiddlewares(app);
+  app.use('/', router);
+  app.use(errorHandler);
 
-    app.listen(PORT, (): void => {
-        console.info('Listening on port', PORT);
-    });
+  app.listen(PORT, (): void => {
+    logger.info(`Listening on port ${PORT}`);
+  });
 };
 
 const initApp = async () => {
-    try {
-        await connectDB();
+  try {
+    await connectDB();
 
-        startServer();
-    }catch(err) {
-        console.error("Failed to connect to DB", err);
-        process.exit(1);
-    }
-}
+    startServer();
+  } catch (err) {
+    logger.error('Failed to connect to DB', err);
+    process.exit(1);
+  }
+};
 
 initApp();
