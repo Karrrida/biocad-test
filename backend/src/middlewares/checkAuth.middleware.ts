@@ -5,7 +5,7 @@ import logger from '../utils/logger';
 
 const checkAuthMiddleware = (req: CustomRequest, res: Response, next: NextFunction): void => {
   try {
-    let token = req.headers.authorization;
+    let token = req.cookies.token;
     if (!token) {
       logger.error('Out of token');
       res.status(401);

@@ -1,11 +1,14 @@
+import AppRoutes from './routes/router.tsx';
+import { AuthProvider } from './context/authContext.tsx';
 
 function App() {
 
   return (
-    <>
-      Hello
-    </>
-  )
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+
+  );
 }
 
-export default App
+export default App;

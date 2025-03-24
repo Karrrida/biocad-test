@@ -6,6 +6,7 @@ import checkPermissionMiddleware from '../middlewares/checkPermission.middleware
 
 const router = Router();
 
+router.get('/auth/me', checkAuthMiddleware, AuthController.authorized)
 router.post('/auth/register', AuthController.register);
 router.post('/auth/login', AuthController.login);
 
