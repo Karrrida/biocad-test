@@ -1,32 +1,26 @@
 import jwt from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 import CustomRequest from '../interfaces/CustomRequest';
-import logger from '../utils/logger';
+import CustomResponse from '../utils/CustomResponse';
 
 const checkAuthMiddleware = (req: CustomRequest, res: Response, next: NextFunction): void => {
-  try {
-    let token = req.cookies.token;
-    if (!token) {
-      logger.error('Out of token');
-      res.status(401);
-      throw new Error('Unauthorized');
-    }
-    token = token.replace('Bearer ', '');
-    const JWT_SECRET = process.env.JWT_SECRET;
-    const tokenVerified = jwt.verify(token, JWT_SECRET);
-    if (!tokenVerified) {
-      logger.error('Token not verified');
-      res.status(401);
-      throw new Error('Unauthorized');
 
-    }
+  let token = req.cookies.token;
+  if (!token) {
+    return CustomResponse.failure(req, res, { name: 'Unauthorized', message: 'No token provided' }, 401);
+  }
+  const JWT_SECRET = process.env.JWT_SECRET;
+
+  try {
+    const tokenVerified = jwt.verify(token, JWT_SECRET);
     req.decoded = tokenVerified;
     next();
   } catch (err) {
-    logger.error(err);
-    next(err);
+    if (err instanceof jwt.TokenExpiredError) {
+      return CustomResponse.failure(req, res, {}, 401, err);
+    }
+    return CustomResponse.failure(req, res, { name: 'Unauthorized', message: 'Invalid token' }, 401);
   }
-
 };
 
 export default checkAuthMiddleware;

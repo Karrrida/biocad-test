@@ -1,6 +1,7 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import errorHandler from './error.middleware';
 
 const setupMiddlewares = (app: Express): void => {
   app.use(express.json());
@@ -11,6 +12,7 @@ const setupMiddlewares = (app: Express): void => {
     credentials: true
 
   }));
+  app.use(errorHandler);
 };
 
 export default setupMiddlewares;

@@ -1,7 +1,7 @@
 import { Container, TextField, Button, Typography, Box, Link } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import api from '../api.ts';
+import Api from '../api.ts';
 
 type RegisterFormInputs = {
   email: string;
@@ -14,11 +14,10 @@ const RegisterPage = () => {
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormInputs>();
 
   const onSubmit = async (data: RegisterFormInputs) => {
-    try{
-      const response = await api.post('auth/register', data);
-      console.log(response.data);
-      navigate('/login')
-    }catch(err){
+    try {
+      await Api.register(data);
+      navigate('/login');
+    } catch (err) {
       console.error('Error register', err);
     }
   };

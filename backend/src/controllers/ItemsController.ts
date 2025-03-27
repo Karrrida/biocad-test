@@ -1,8 +1,8 @@
 import { Response, NextFunction } from 'express';
 import CustomRequest from '../interfaces/CustomRequest';
+import CustomResponse from '../utils/CustomResponse';
 import ItemsService from '../services/ItemsService';
 import { Prisma } from '@prisma/client';
-import logger from '../utils/logger';
 
 class ItemsController {
   create = async (req: CustomRequest, res: Response, next: NextFunction) => {
@@ -11,19 +11,16 @@ class ItemsController {
       const userId = req.decoded?.id;
 
       if (!userId) {
-        res.status(401);
-        throw new Error('Unauthorized');
+        return CustomResponse.failure(req, res, { name: 'Unauthorized' }, 401);
       }
 
       if (!description || !text) {
-        res.status(400);
-        throw new Error('Description and text are required');
+        return CustomResponse.failure(req, res, { name: 'Bad data', message: 'Fields description and name are required' }, 401);
       }
 
       await ItemsService.create(description, text, userId);
-      res.status(200).json({ message: `Item created` });
+      return CustomResponse.success(req, res, {message: 'Success'}, 200);
     } catch (err) {
-      logger.error(err);
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
         next('Internal Server Error');
       }
@@ -35,12 +32,8 @@ class ItemsController {
     try {
       const itemId = Number(req.params.id);
       await ItemsService.update(itemId, req.body.text, req.body.description);
-      res.status(201).json({ message: `Item updated` });
+      return CustomResponse.success(req, res, {message: 'Success'}, 200);
     } catch (err) {
-      logger.error(err);
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        next('Internal Server Error');
-      }
       next(err);
     }
   };
@@ -50,25 +43,19 @@ class ItemsController {
       const itemId = Number(req.params.id);
 
       if (!itemId) {
-        res.status(402);
-        throw new Error('Internal server error');
+        return CustomResponse.failure(req, res, { name: 'Bad data', message: 'not enough params' }, 400);
       }
       await ItemsService.delete(itemId);
-      res.status(201).json({ message: `Item deleted` });
+      return CustomResponse.success(req, res, {message: 'Success'}, 200);
     } catch (err) {
-      logger.error(err);
-      if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        next('Internal server error');
-      }
       next(err);
     }
   };
   getItems = async (req: CustomRequest, res: Response, next: NextFunction) => {
     try {
       const items = await ItemsService.findItems();
-      res.status(200).json(items);
+      return CustomResponse.success(req, res, {items}, 200);
     } catch (err) {
-      logger.error(err);
       next(err);
     }
 

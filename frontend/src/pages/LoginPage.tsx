@@ -1,6 +1,6 @@
 import { Container, Typography, Button, TextField, Box, Link } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import api from '../api.ts';
+import Api from '../api.ts';
 import { useContext } from 'react';
 import { AuthContext } from '../context/authContext.tsx';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
@@ -16,8 +16,7 @@ const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginPageInputs>();
   const onSubmit = async (data: LoginPageInputs) => {
    try{
-     const response = await api.post('auth/login', data);
-     console.log(response.data);
+     await Api.login(data);
      authContext?.login();
      navigate('/dashboard');
    }catch(err){

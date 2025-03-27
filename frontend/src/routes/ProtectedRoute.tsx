@@ -10,6 +10,7 @@ const ProtectedRoute = ({children}: {children: ReactNode}) => {
   }
 
   if(!authContext?.isAuthenticated) {
+    console.log(123);
     return <Navigate to='/login'/>
   }
 

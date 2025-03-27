@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import api from '../api.ts';
+import Api from '../api.ts';
 
 interface AuthContext {
   isAuthenticated: boolean | null;
@@ -14,7 +14,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        await api.get('/auth/me');
+        await Api.authMe();
         setIsAuthenticated(true);
       } catch (err) {
         setIsAuthenticated(false);
