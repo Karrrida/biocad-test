@@ -1,57 +1,70 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
+import { Item } from './types/types.ts';
 
-interface Items {
-  id: number;
-  authorId?: number;
-  description: string;
-  text: string;
+interface GetItemsResponse {
+  data: Item[] | [];
+  totalPages: number;
 }
 
 class Api {
-  api = axios.create({
-    baseURL: 'http://localhost:3000',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    withCredentials: true,
-  });
 
-  getItems = async (): Promise<Items[] | []> => {
-    try {
-      const response = await this.api.get('/items');
-      return response.data;
-    } catch (err) {
-      console.error('Get Items error: ', err);
-      return [];
-    }
+  private api: AxiosInstance;
 
+  constructor() {
+    this.api = axios.create({
+      baseURL: 'http://localhost:3000',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+    });
+
+    this.api.interceptors.response.use((response) =>
+        response,
+      (err) => {
+        return Promise.reject(err);
+      });
+  }
+
+
+  getItems = async (params?: { page: number, perPage: number }): Promise<GetItemsResponse> => {
+    const queryParams = new URLSearchParams();
+    queryParams.append('page', String(params?.page));
+    queryParams.append('perPage', String(params?.perPage));
+    const response = await this.api.get(`/items?${queryParams.toString()}`);
+    return {
+      data: response.data.data.items,
+      totalPages: response.data.data.totalPages,
+    };
+  };
+
+  createItem = async (data: Item): Promise<Item> => {
+    const response = await this.api.post('/items', data);
+    return response.data.data;
+  };
+
+  updateItem = async (id: number | undefined, data: Item) => {
+    const response = await this.api.patch(`/items/${id}`, data);
+    return response.data.data;
+  };
+
+  deleteItem = async (id: number): Promise<void> => {
+    await this.api.delete(`/items/${id}`);
   };
 
   login = async (data: object) => {
-    try {
-      await this.api.post('/auth/login', data);
-    } catch (err) {
-      console.error('Login error: ', err);
-    }
+    await this.api.post('/auth/login', data);
   };
 
   register = async (data: object) => {
-    try {
-      const response = await this.api.post('/auth/register', data);
-      console.log(response.data);
-      return response.data;
-    } catch (err) {
-      console.error('Login error: ', err);
-    }
+    const response = await this.api.post('/auth/register', data);
+    return response.data;
+
   };
 
   authMe = async () => {
-    await this.api.get('auth/me');
-  };
-
-  updateItem = async (id: number, data: Items) => {
-    const response = await this.api.patch(`/items/${id}`, data);
-    console.log(response);
+    const response = await this.api.get('auth/me');
+    return response.data;
   };
 }
 

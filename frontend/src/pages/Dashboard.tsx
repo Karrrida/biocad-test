@@ -1,92 +1,108 @@
-import { List, ListItem, ListItemText, Divider, CircularProgress, Box, Alert, Typography, Button } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Container, CircularProgress, Pagination, Button } from '@mui/material';
 import Api from '../api.ts';
-import { Fragment, useEffect, useState } from 'react';
-import FormDialog from '../components/FormDialog.tsx';
+import ItemList from '../components/ItemList.tsx';
+import ItemModal from '../components/ItemModal.tsx';
+import { useNotification } from '../context/NotificationContext.tsx';
 
-interface Items {
+interface Item {
   id: number;
-  description: string;
-  text: string;
+  title: string;
+  authorId: number;
 }
 
-const Dashboard = () => {
-  const [items, setItems] = useState<Items[] | []>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [editingItem, setEditingItem] = useState<Items | null>(null);
+const Dashboard: React.FC = () => {
 
-  const handleEditClick = (item: Items) => setEditingItem(item)
-  const handleSave = async (updatedData: { description: string, text: string, id: number }) => {
+  const { showNotification } = useNotification();
 
-    if (!editingItem) {
-      return;
-    }
-    const response =  await Api.updateItem(editingItem.id, updatedData);
-    console.log(response);
-  };
+  const [items, setItems] = useState<Item[] | []>([]);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [currentItem, setCurrentItem] = useState<Item | null>(null);
 
   useEffect(() => {
-    const getAll = async () => {
-      try {
-        const data: Items[] = await Api.getItems();
-        setItems(data);
-      } catch (err) {
-        setError('Ошибка загрузки данных');
-      } finally {
-        setLoading(false);
-      }
-    };
+    fetchItems(page);
+  }, [page]);
 
-    getAll();
+  const fetchItems = async (page: number) => {
+    setLoading(true);
+    try {
+      const response = await Api.getItems({ page, perPage: 5 });
+      setItems(response.data);
+      setTotalPages(response.totalPages);
+    } catch (error) {
+      console.error('Ошибка загрузки записей', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  }, []);
+  const handleAdd = () => {
+    setCurrentItem(null);
+    setOpenModal(true);
+  };
+
+  const handleEdit = (item: Item): void => {
+    setCurrentItem(item);
+    setOpenModal(true);
+  };
+
+  const handleDelete = async (id: number): Promise<void> => {
+    try {
+      await Api.deleteItem(id);
+      await fetchItems(page);
+    } catch (err) {
+      const error = err as { response?: { data?: { message: string } } };
+      showNotification(`Ошибка при удалении: ${error?.response?.data?.message}`, 'error');
+    }
+
+
+  };
+
+  const handleClose = () => {
+    setOpenModal(false);
+  };
+
+  const handleSaveItem = async (data: Item) => {
+    if (currentItem) {
+      console.log('current', currentItem, '\n', 'changedData', data);
+      const updateItem = await Api.updateItem(currentItem.id, data);
+      console.log(updateItem);
+      fetchItems(page);
+      // setItems((prevItems) =>
+      //   prevItems.map((item) => (item.id === updateItem.id) ? updateItem : item));
+    } else {
+      const newItem = await Api.createItem(data);
+      console.log(newItem);
+      setItems((prevState) => [...prevState, newItem]);
+      fetchItems(page);
+    }
+  };
 
   return (
-    <>
-      {loading && (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <CircularProgress />
-        </Box>
+    <Container>
+      <h1>Dashboard</h1>
+      <Button variant="contained" onClick={handleAdd}>Создать</Button>
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <ItemList items={items} onEdit={handleEdit} onDelete={handleDelete} />
       )}
-
-      {error && (
-        <Alert severity="error" sx={{ margin: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {!loading && !error && (
-        <List sx={{ width: '100%', margin: '20px', bgcolor: 'background.paper' }}>
-          {items.map((item, index) => (
-            <Fragment key={item.id}>
-              <ListItem alignItems="flex-start">
-                <ListItemText
-                  primary={item.description}
-                  secondary={item.text}
-                />
-              </ListItem>
-              <Button variant="contained" size="small" onClick={() => handleEditClick(item)}>Редактировать</Button>
-              {index !== items.length - 1 && <Divider />}
-            </Fragment>
-          ))}
-        </List>
-      )}
-
-      {!loading && !error && items.length === 0 && (
-        <Typography variant="body1" align="center" mt={4}>
-          Нет данных для отображения
-        </Typography>
-      )}
-
-      {editingItem && (
-        <FormDialog
-          open={!!editingItem}
-          initialData={editingItem}
-          onClose={() => setEditingItem(null)}
-          onSubmit={handleSave}
-        ></FormDialog>
-      )}
-    </>
+      <Pagination
+        count={totalPages}
+        page={page}
+        onChange={(_, value) => setPage(value)}
+        sx={{ marginTop: 2 }}
+      />
+      <ItemModal
+        open={openModal}
+        onClose={handleClose}
+        onSubmit={handleSaveItem}
+        initialData={currentItem || { id: 0, title: '', authorId: 0 }}
+      />
+    </Container>
   );
 };
 

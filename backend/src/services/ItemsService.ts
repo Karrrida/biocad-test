@@ -15,7 +15,7 @@ class ItemsService {
   async findItemById(id: number): Promise<Item | null> {
     return prisma.item.findUnique({
       where: { id },
-    })
+    });
   }
 
   async update(id: number, title: string): Promise<Item> {
@@ -23,14 +23,14 @@ class ItemsService {
       where: { id },
       data: {
         title,
-      }
-    })
+      },
+    });
   }
 
   async delete(id: number): Promise<void> {
     await prisma.item.delete({
       where: { id },
-    })
+    });
   }
 
   async findItems({ page, perPage }: PaginationParams): Promise<GetItemResponse> {
@@ -39,6 +39,9 @@ class ItemsService {
       prisma.item.findMany({
         skip,
         take: perPage,
+        orderBy: {
+          id: 'desc',
+        },
       }),
       prisma.item.count(),
     ]);

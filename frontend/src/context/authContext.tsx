@@ -11,15 +11,23 @@ const AuthContext = createContext<AuthContext | undefined>(undefined);
 
 const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await Api.authMe();
+
+  const checkAuth = async () => {
+    try {
+      const response = await Api.authMe();
+      if (response.status) {
         setIsAuthenticated(true);
-      } catch (err) {
+      } else {
         setIsAuthenticated(false);
       }
-    };
+
+    } catch (err) {
+      setIsAuthenticated(false);
+    }
+  };
+
+  useEffect(() => {
+
     checkAuth();
   }, []);
 
