@@ -1,25 +1,27 @@
 import jwt from 'jsonwebtoken';
-import { Response, NextFunction } from 'express';
-import CustomRequest from '../interfaces/CustomRequest';
-import CustomResponse from '../utils/CustomResponse';
+import { NextFunction } from 'express';
+import { CustomRequest } from '../types/requests';
+import { TypedResponse } from '../types/api-response';
 
-const checkAuthMiddleware = (req: CustomRequest, res: Response, next: NextFunction): void => {
-
+const checkAuthMiddleware = (req: CustomRequest, res: TypedResponse<null>, next: NextFunction): void => {
+  res.removeHeader('X-Powered-By');
   let token = req.cookies.token;
   if (!token) {
-    return CustomResponse.failure(req, res, { name: 'Unauthorized', message: 'No token provided' }, 401);
+    res.status(401).json({ status: false, data: null, message: 'No token provided' });
+    return;
   }
   const JWT_SECRET = process.env.JWT_SECRET;
 
   try {
-    const tokenVerified = jwt.verify(token, JWT_SECRET);
-    req.decoded = tokenVerified;
+    req.decoded = jwt.verify(token, JWT_SECRET);
     next();
   } catch (err) {
     if (err instanceof jwt.TokenExpiredError) {
-      return CustomResponse.failure(req, res, {}, 401, err);
+      res.status(401).json({ status: false, data: null, message: err.message });
+      return;
     }
-    return CustomResponse.failure(req, res, { name: 'Unauthorized', message: 'Invalid token' }, 401);
+    res.status(401).json({ status: false, data: null, message: 'Invalid token' });
+    return;
   }
 };
 

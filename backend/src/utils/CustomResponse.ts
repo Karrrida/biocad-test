@@ -3,7 +3,7 @@ import logger from './logger';
 
 
 class CustomResponse {
-  success(req: Request, res: Response, data: object, code: number = 200) {
+  success<TReq extends Request>(req: TReq, res: Response, data: object, code: number = 200) {
     const result: object = {
       status: true,
       data: data,
@@ -14,7 +14,7 @@ class CustomResponse {
     logger.info({result},`[OUT: ${req.originalUrl}] [METHOD: ${req.method} ]]`)
   }
 
-  failure(req: Request, res: Response, data: object, code: number = 200, err: Error = null) {
+  failure<TReq extends Request>(req: TReq, res: Response, data: object, code: number = 200, err: Error = null) {
     const message: string | object = err ? 'internal server error' : data;
     const result: object = {
       status: false,

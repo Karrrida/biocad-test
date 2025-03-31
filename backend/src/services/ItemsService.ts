@@ -1,40 +1,52 @@
 import prisma from '../db';
+import { Item } from '@prisma/client';
+import { GetItemResponse, PaginationParams } from '../types/api-response';
 
 class ItemsService {
-  async create(description: string, text: string, userId: number): Promise<void> {
-    await prisma.items.create({
+  async create(title: string, userId: number): Promise<Item> {
+    return prisma.item.create({
       data: {
         authorId: userId,
-        description,
-        text,
+        title,
       },
     });
   }
 
-  async findItemById(id: number) {
-    return prisma.items.findUnique({
+  async findItemById(id: number): Promise<Item | null> {
+    return prisma.item.findUnique({
       where: { id },
     })
   }
 
-  async update( id: number, text: string, description: string){
-    await prisma.items.update({
+  async update(id: number, title: string): Promise<Item> {
+    return prisma.item.update({
       where: { id },
       data: {
-        description,
-        text
+        title,
       }
     })
   }
 
-  async delete( id: number){
-    await prisma.items.delete({
+  async delete(id: number): Promise<void> {
+    await prisma.item.delete({
       where: { id },
     })
   }
 
-  async findItems() {
-    return prisma.items.findMany();
+  async findItems({ page, perPage }: PaginationParams): Promise<GetItemResponse> {
+    const skip = (page - 1) * perPage;
+    const [items, total] = await Promise.all([
+      prisma.item.findMany({
+        skip,
+        take: perPage,
+      }),
+      prisma.item.count(),
+    ]);
+
+    return {
+      items,
+      totalPages: Math.ceil(total / perPage),
+    };
   }
 }
 
