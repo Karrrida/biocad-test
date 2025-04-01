@@ -10,7 +10,7 @@ Full-stack приложение:
 
 ![Node.js](https://img.shields.io/badge/Node.js-20.15.1-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
-![React](https://img.shields.io/badge/React-18-blue)
+![React](https://img.shields.io/badge/React-19-blue)
 
 Полный стек:
 - Backend: Node.js, TypeScrypt, express, Prisma ORM, JWT, bcrypt
