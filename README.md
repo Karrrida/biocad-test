@@ -36,12 +36,13 @@ cd biocad-test
 ### 2. Настройка окружения
 
 - Создайте файл .env в папке backend/ на основе примера .env.example
-- Отредактируйте параметры(DATABASE_URL и JWT_SECRET)
+- Отредактируйте параметры
+  (DATABASE_URL и JWT_SECRET, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB)
 
 ### 3. Запуск в Docker
 
 ```bash
-docker compose up --buld -d
+docker compose up --build -d
 ```
 
 Приложение будет доступно:
