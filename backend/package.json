@@ -6,6 +6,12 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:prod": "NODE_ENV=production node dist/index.js",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "generate": "prisma generate",
+    "prestart": "npm run build",
+    "docker:build": "npm run build && npm run generate",
     "prettify": "prettier --log-level warn --cache '{src/**/*,*}.{ts,tsx,js,json}' '!**/{node_modules,dist}/**/*'"
   },
   "keywords": [],
