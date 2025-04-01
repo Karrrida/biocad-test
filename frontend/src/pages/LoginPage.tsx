@@ -4,6 +4,7 @@ import Api from '../api.ts';
 import { useContext } from 'react';
 import { AuthContext } from '../context/authContext.tsx';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useNotification } from '../context/NotificationContext.tsx';
 
 type LoginPageInputs = {
   email: string;
@@ -11,6 +12,9 @@ type LoginPageInputs = {
 }
 
 const LoginPage = () => {
+
+  const { showNotification } = useNotification();
+
   const authContext = useContext(AuthContext);
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm<LoginPageInputs>();
@@ -20,7 +24,8 @@ const LoginPage = () => {
      authContext?.login();
      navigate('/dashboard');
    }catch(err){
-     console.warn('Error login', err);
+     const error = err as { response?: { data?: { message: string } } };
+     showNotification(`Ошибка при входе: ${error?.response?.data?.message}`, 'error');
    }
   };
 

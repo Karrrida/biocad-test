@@ -32,8 +32,9 @@ const Dashboard: React.FC = () => {
       const response = await Api.getItems({ page, perPage: 5 });
       setItems(response.data);
       setTotalPages(response.totalPages);
-    } catch (error) {
-      console.error('Ошибка загрузки записей', error);
+    } catch (err) {
+      const error = err as { response?: { data?: { message: string } } };
+      showNotification(`Ошибка при удалении: ${error?.response?.data?.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -53,6 +54,7 @@ const Dashboard: React.FC = () => {
     try {
       await Api.deleteItem(id);
       await fetchItems(page);
+      showNotification(`Запись удалена`, 'success');
     } catch (err) {
       const error = err as { response?: { data?: { message: string } } };
       showNotification(`Ошибка при удалении: ${error?.response?.data?.message}`, 'error');
@@ -67,17 +69,24 @@ const Dashboard: React.FC = () => {
 
   const handleSaveItem = async (data: Item) => {
     if (currentItem) {
-      console.log('current', currentItem, '\n', 'changedData', data);
-      const updateItem = await Api.updateItem(currentItem.id, data);
-      console.log(updateItem);
-      fetchItems(page);
-      // setItems((prevItems) =>
-      //   prevItems.map((item) => (item.id === updateItem.id) ? updateItem : item));
+      try {
+        const updateItem = await Api.updateItem(currentItem.id, data);
+        fetchItems(page);
+        showNotification(`Запись изменена: ${updateItem.id}`, 'info');
+      } catch (err) {
+        const error = err as { response?: { data?: { message: string } } };
+        showNotification(`Ошибка при редактировании: ${error?.response?.data?.message}`, 'error');
+      }
     } else {
-      const newItem = await Api.createItem(data);
-      console.log(newItem);
-      setItems((prevState) => [...prevState, newItem]);
-      fetchItems(page);
+      try {
+        const newItem = await Api.createItem(data);
+        setItems((prevState) => [...prevState, newItem]);
+        fetchItems(page);
+        showNotification(`Запись создана: ${newItem.id}`, 'info');
+      } catch (err) {
+        const error = err as { response?: { data?: { message: string } } };
+        showNotification(`Ошибка при создании: ${error?.response?.data?.message}`, 'error');
+      }
     }
   };
 

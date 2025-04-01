@@ -2,6 +2,7 @@ import { Container, TextField, Button, Typography, Box, Link } from '@mui/materi
 import { useForm } from 'react-hook-form';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Api from '../api.ts';
+import { useNotification } from '../context/NotificationContext.tsx';
 
 type RegisterFormInputs = {
   email: string;
@@ -10,6 +11,8 @@ type RegisterFormInputs = {
 };
 
 const RegisterPage = () => {
+  const { showNotification } = useNotification();
+
   const navigate = useNavigate();
   const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormInputs>();
 
@@ -18,7 +21,8 @@ const RegisterPage = () => {
       await Api.register(data);
       navigate('/login');
     } catch (err) {
-      console.error('Error register', err);
+      const error = err as { response?: { data?: { message: string } } };
+      showNotification(`Ошибка при входе: ${error?.response?.data?.message}`, 'error');
     }
   };
 
