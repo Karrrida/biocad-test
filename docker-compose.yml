@@ -3,6 +3,10 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: biocad
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: biocad
     env_file: ./backend/.env
     volumes:
       - postgres-data:/var/lib/postgresql/data
